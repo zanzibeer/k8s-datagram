@@ -71,6 +71,8 @@ spec:
             tcpSocket:
               port: kdc-tcp
       restartPolicy: Always
+      imagePullSecrets:
+        - name: docker-secret
       {{- if .Values.global.podSecurityContext.enabled }}
       securityContext:
         runAsUser: {{ .Values.global.podSecurityContext.runAsUser }}

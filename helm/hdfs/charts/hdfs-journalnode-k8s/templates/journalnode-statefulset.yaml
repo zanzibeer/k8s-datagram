@@ -140,6 +140,8 @@ spec:
               mountPath: /kerberos-keytab-copy
       {{- end }}
       restartPolicy: Always
+      imagePullSecrets:
+        - name: docker-secret
       volumes:
         - name: hdfs-config
           configMap:

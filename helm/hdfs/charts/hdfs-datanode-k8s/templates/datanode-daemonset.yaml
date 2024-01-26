@@ -129,6 +129,8 @@ spec:
         {{- end }}
       {{- end }}
       restartPolicy: Always
+      imagePullSecrets:
+        - name: docker-secret
       volumes:
         - name: dn-scripts
           configMap:

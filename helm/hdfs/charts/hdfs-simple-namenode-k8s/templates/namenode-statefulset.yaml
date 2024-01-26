@@ -79,6 +79,8 @@ spec:
               mountPath: /etc/hadoop-custom-conf
               readOnly: true
       restartPolicy: Always
+      imagePullSecrets:
+        - name: docker-secret
       volumes:
         - name: hdfs-name
           hostPath:
