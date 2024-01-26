@@ -74,7 +74,7 @@ spec:
             initialDelaySeconds: 60
             periodSeconds: 30
           securityContext:
-            privileged: true
+            privileged: false
           volumeMounts:
             - name: dn-scripts
               mountPath: /dn-scripts
