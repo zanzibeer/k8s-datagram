@@ -33,8 +33,6 @@ hdfs-config-k8s:
 ## hdfs-journalnode-k8s:
 ## ------------------------------------------------------------------------------
 hdfs-journalnode-k8s:
-  imagePullSecrets:
-    - name: docker-secret
   image:
     repository: "registry.neomsa.ru/docker-neofoundation/hadoop/hadoop-namenode"
     pullPolicy: IfNotPresent
@@ -65,8 +63,6 @@ hdfs-journalnode-k8s:
 ## hdfs-namenode-k8s:
 ## ------------------------------------------------------------------------------
 hdfs-namenode-k8s:
-  imagePullSecrets:
-    - name: docker-secret
   image:
     repository: "registry.neomsa.ru/docker-neofoundation/hadoop/hadoop-namenode"
     pullPolicy: IfNotPresent
@@ -136,8 +132,6 @@ hdfs-namenode-k8s:
 ## hdfs-simple-namenode-k8s:
 ## ------------------------------------------------------------------------------
 hdfs-simple-namenode-k8s:
-  imagePullSecrets:
-    - name: docker-secret
   image:
     repository: "registry.neomsa.ru/docker-neofoundation/hadoop/hadoop-namenode"
     pullPolicy: IfNotPresent
@@ -172,8 +166,6 @@ hdfs-simple-namenode-k8s:
 ## hdfs-datanode-k8s:
 ## ------------------------------------------------------------------------------
 hdfs-datanode-k8s:
-  imagePullSecrets:
-    - name: docker-secret
   image:
     repository: "registry.neomsa.ru/docker-neofoundation/hadoop/hadoop-datanode"
     pullPolicy: IfNotPresent
@@ -187,8 +179,6 @@ hdfs-datanode-k8s:
 ## hdfs-client-k8s:
 ## ------------------------------------------------------------------------------
 hdfs-client-k8s:
-  imagePullSecrets:
-    - name: docker-secret
   image:
     repository: "registry.neomsa.ru/docker-neofoundation/hadoop/hadoop-hadoop"
     pullPolicy: IfNotPresent
@@ -229,8 +219,6 @@ hdfs-krb5-k8s:
   ## Increase entropy by running rngd or haveged.
   ## TODO: Using latest tag is not desirable. The current image does not have specific tags.
   ## Find a way to fix it.
-  imagePullSecrets:
-    - name: docker-secret
   image:
     repository: gcavalcante8808/krb5-server
     tag: latest
