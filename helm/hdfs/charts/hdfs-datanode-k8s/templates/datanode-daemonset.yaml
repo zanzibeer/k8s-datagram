@@ -39,8 +39,8 @@ spec:
       tolerations: 
         {{- toYaml .Values.tolerations | nindent 8 }}
       {{- end }}
-      hostNetwork: true
-      hostPID: true
+      hostNetwork: false
+      hostPID: false
       dnsPolicy: ClusterFirstWithHostNet
       containers:
         - name: datanode

@@ -36,7 +36,7 @@ hdfs-journalnode-k8s:
   imagePullSecrets:
     - name: docker-secret
   image:
-    repository: "docker-private.do.neoflex.ru/datagram/hadoop/k8s-namenode"
+    repository: "registry.neomsa.ru/docker-neofoundation/hadoop/k8s-namenode"
     pullPolicy: IfNotPresent
     tag: "2.9.1"
   persistence:
@@ -47,7 +47,7 @@ hdfs-journalnode-k8s:
     ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
     ##   GKE, AWS & OpenStack)
     ##
-    # storageClass: "-"
+    storageClass: "localpath-deckhouse-system"
     ## To choose a suitable persistent volume from available static volumes, selectors
     ## are used.
     # selector:
@@ -68,7 +68,7 @@ hdfs-namenode-k8s:
   imagePullSecrets:
     - name: docker-secret
   image:
-    repository: "docker-private.do.neoflex.ru/datagram/hadoop/k8s-namenode"
+    repository: "registry.neomsa.ru/docker-neofoundation/hadoop/k8s-namenode"
     pullPolicy: IfNotPresent
     tag: "2.9.1"
   ## Name of the namenode start script in the config map.
@@ -139,7 +139,7 @@ hdfs-simple-namenode-k8s:
   imagePullSecrets:
     - name: docker-secret
   image:
-    repository: "docker-private.do.neoflex.ru/datagram/hadoop/k8s-namenode"
+    repository: "registry.neomsa.ru/docker-neofoundation/hadoop/k8s-namenode"
     pullPolicy: IfNotPresent
     tag: "2.9.1"
   ## Path of the local disk directory on a cluster node that will contain the namenode
@@ -175,7 +175,7 @@ hdfs-datanode-k8s:
   imagePullSecrets:
     - name: docker-secret
   image:
-    repository: "docker-private.do.neoflex.ru/datagram/hadoop/k8s-datanode"
+    repository: "registry.neomsa.ru/docker-neofoundation/hadoop/k8s-datanode"
     pullPolicy: IfNotPresent
     tag: "2.9.1"
   ## Node labels and tolerations for pod assignment
@@ -190,7 +190,7 @@ hdfs-client-k8s:
   imagePullSecrets:
     - name: docker-secret
   image:
-    repository: "docker-private.do.neoflex.ru/datagram/hadoop/k8s-hadoop"
+    repository: "registry.neomsa.ru/docker-neofoundation/hadoop/k8s-hadoop"
     pullPolicy: IfNotPresent
     tag: "2.9.1"
   ## Node labels and tolerations for pod assignment
