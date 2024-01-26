@@ -1,0 +1,110 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "livy.fullname" . }}
+  labels: {{- include "livy.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels: {{- include "livy.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- if .Values.podAnnotations }}
+        {{- with .Values.podAnnotations }}
+      annotations: {{- toYaml . | nindent 8 }}
+        {{- end }}
+        checksum/config: {{ include (print $.Template.BasePath "/configmaps.yaml") . | sha256sum }}
+      {{- else }}
+      annotations: 
+        checksum/config: {{ include (print $.Template.BasePath "/configmaps.yaml") . | sha256sum }}
+      {{- end }}
+      labels: {{- include "livy.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "livy.serviceAccountName" . }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          env:
+          - name: K8S_API_HOST
+            value: localhost
+          - name: HADOOP_CONF_DIR
+            value: "/opt/hadoop/conf"
+          securityContext: {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.livyImage.repository }}:{{ .Values.livyImage.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.livyImage.pullPolicy }}
+          ports:
+            - name: livy-rest
+              containerPort: 8998
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: livy-rest
+          readinessProbe:
+            httpGet:
+              path: /
+              port: livy-rest
+          resources: {{- toYaml .Values.resources.livy | nindent 12 }}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+          - mountPath: /opt/livy/conf/livy.conf
+            name: livy-config
+            subPath: livy.conf
+          - mountPath: /opt/spark/conf/spark-defaults.conf
+            name: spark-config
+            subPath: spark-defaults.conf
+          - mountPath: /opt/hadoop/conf/core-site.xml
+            name: hadoop-core-site
+            subPath: core-site.xml
+        - name: kubectl
+          command:
+          - /usr/local/bin/kubectl
+          - proxy
+          - --port
+          - "8443"
+          image: '{{ .Values.kubectlImage.repository }}:{{ .Values.kubectlImage.tag | default "latest" }}'
+          imagePullPolicy: {{ .Values.kubectlImage.pullPolicy }}
+          ports:
+          - containerPort: 8443
+            name: k8s-api
+            protocol: TCP
+          resources: {{- toYaml .Values.resources.sidecar | nindent 12 }}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      volumes:
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: livy.conf
+            path: livy.conf
+          name: {{ include "livy.fullname" . }}-cm
+        name: livy-config
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: spark-defaults.conf
+            path: spark-defaults.conf
+          name: {{ include "livy.fullname" . }}-cm
+        name: spark-config
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: core-site.xml
+            path: core-site.xml
+          name: {{ include "livy.fullname" . }}-cm
+        name: hadoop-core-site
+      {{- with .Values.nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}

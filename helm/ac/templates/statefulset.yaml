@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "admin-console.fullname" . }}
+  labels: {{- include "admin-console.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "admin-console.fullname" . }}
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels: {{- include "admin-console.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- if .Values.podAnnotations }}
+        {{- with .Values.podAnnotations }}
+      annotations: {{- toYaml . | nindent 8 }}
+        {{- end }}
+        checksum/config: {{ include (print $.Template.BasePath "/configmaps.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+      {{- else }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmaps.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+      {{- end }}
+
+      labels: {{- include "admin-console.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "admin-console.serviceAccountName" . }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          envFrom:
+          - configMapRef:
+              name: {{ include "admin-console.fullname" . }}-cm
+          - secretRef:
+              name: {{ include "admin-console.fullname" . }}-secret
+          securityContext: {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            {{- range .Values.persistence.volumes }}
+            - mountPath: {{ .mountPath }}
+              name: {{ .name }}
+            {{- end }}
+            - name: kube-root-ca
+              mountPath: /opt/app/ca.crt
+              subPath: ca.crt
+      {{- with .Values.nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: kube-root-ca
+          configMap:
+            name: kube-root-ca.crt
+            items:
+              - key: ca.crt
+                path: ca.crt
+            defaultMode: 420
+    {{- if not .Values.persistence.enabled }}
+      {{- range .Values.persistence.volumes }}
+        - name: {{ .name }}
+          emptyDir: {}
+      {{- end }}
+    {{- else }}
+  volumeClaimTemplates:
+      {{- range .Values.persistence.volumes }}
+  - metadata:
+      name: {{ .name }}
+    spec:
+      accessModes:
+      {{- range .accessModes }} 
+        - {{ . | quote }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .size }}
+    status:
+      phase: Pending
+      {{- end }}
+    {{- end }}

@@ -1,0 +1,158 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ template "hdfs-k8s.datanode.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ template "hdfs-k8s.datanode.name" . }}
+    helm.sh/chart: {{ template "hdfs-k8s.subchart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ template "hdfs-k8s.datanode.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ template "hdfs-k8s.datanode.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+      {{- if .Values.podAnnotations }}
+      annotations: {{- toYaml .Values.podAnnotations | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- if .Values.affinity }}
+      affinity: {{- toYaml .Values.affinity | nindent 8 }}
+      {{- else if .Values.global.defaultAffinityEnabled }}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: {{ template "hdfs-k8s.datanode.fullname" . }}-exclude
+                  operator: DoesNotExist
+      {{- end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector: 
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations: 
+        {{- toYaml .Values.tolerations | nindent 8 }}
+      {{- end }}
+      hostNetwork: true
+      hostPID: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+        - name: datanode
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: HADOOP_CUSTOM_CONF_DIR
+              value: /etc/hadoop-custom-conf
+            - name: MULTIHOMED_NETWORK
+              value: "0"
+            {{- if and .Values.global.kerberosEnabled .Values.global.jsvcEnabled }}
+            - name: HADOOP_SECURE_DN_USER
+              value: root
+            - name: JSVC_OUTFILE
+              value: /dev/stdout
+            - name: JSVC_ERRFILE
+              value: /dev/stderr
+            - name: JSVC_HOME
+              value: /jsvc-home
+            {{- end }}
+          livenessProbe:
+            exec:
+              command:
+                - /dn-scripts/check-status.sh
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          readinessProbe:
+            exec:
+              command:
+                - /dn-scripts/check-status.sh
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: dn-scripts
+              mountPath: /dn-scripts
+              readOnly: true
+            - name: hdfs-config
+              mountPath: /etc/hadoop-custom-conf
+              readOnly: true
+            {{- range $index, $path := .Values.global.dataNodeHostPath }}
+            - name: hdfs-data-{{ $index }}
+              mountPath: /hadoop/dfs/data/{{ $index }}
+            {{- end }}
+            {{- if .Values.global.kerberosEnabled }}
+            - name: kerberos-config
+              mountPath: /etc/krb5.conf
+              subPath: {{ .Values.global.kerberosConfigFileName }}
+              readOnly: true
+            - name: kerberos-keytab-copy
+              mountPath: /etc/security/
+              readOnly: true
+            {{- if .Values.global.jsvcEnabled }}
+            - name: jsvc-home
+              mountPath: /jsvc-home
+            {{- end }}
+            {{- end }}
+      {{- if .Values.global.kerberosEnabled }}
+      initContainers:
+        - name: copy-kerberos-keytab
+          image: busybox:1.27.1
+          command: ['sh', '-c']
+          args:
+            - cp /kerberos-keytabs/$MY_NODE_NAME.keytab /kerberos-keytab-copy/hdfs.keytab
+          env:
+            - name: MY_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          volumeMounts:
+            - name: kerberos-keytabs
+              mountPath: /kerberos-keytabs
+            - name: kerberos-keytab-copy
+              mountPath: /kerberos-keytab-copy
+        {{- if .Values.global.jsvcEnabled }}
+        - name: copy-jsvc
+          # Pull by digest because the image doesn't have tags to pin.
+          image: mschlimb/jsvc@sha256:bf20eb9a319e9a2f87473d8da7418d21503a97528b932800b6b8417cd31e30ef
+          command: ['sh', '-c']
+          args:
+            - cp /usr/bin/jsvc /jsvc-home/jsvc
+          volumeMounts:
+            - name: jsvc-home
+              mountPath: /jsvc-home
+        {{- end }}
+      {{- end }}
+      restartPolicy: Always
+      volumes:
+        - name: dn-scripts
+          configMap:
+            name: {{ template "hdfs-k8s.datanode.fullname" . }}-scripts
+            defaultMode: 0744
+        {{- range $index, $path := .Values.global.dataNodeHostPath }}
+        - name: hdfs-data-{{ $index }}
+          hostPath:
+            path: {{ $path }}
+        {{- end }}
+        - name: hdfs-config
+          configMap:
+            name: {{ template "hdfs-k8s.config.fullname" . }}
+        {{- if .Values.global.kerberosEnabled }}
+        - name: kerberos-config
+          configMap:
+            name: {{ template "krb5-configmap" . }}
+        - name: kerberos-keytabs
+          secret:
+            secretName: {{ template "krb5-keytabs-secret" . }}
+        - name: kerberos-keytab-copy
+          emptyDir: {}
+        {{- if .Values.global.jsvcEnabled }}
+        - name: jsvc-home
+          emptyDir: {}
+        {{- end }}
+        {{- end }}

@@ -1,0 +1,100 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hdfs-config
+  namespace: apache-hdfs
+  uid: 6c76fe7d-d69a-4227-857d-e65cc227b94b
+  resourceVersion: '3272533'
+  creationTimestamp: '2023-07-16T18:47:42Z'
+  labels:
+    app.kubernetes.io/instance: hdfs
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: hdfs-client
+    helm.sh/chart: hdfs-config-k8s-0.1.0
+  annotations:
+    meta.helm.sh/release-name: hdfs
+    meta.helm.sh/release-namespace: apache-hdfs
+data:
+  core-site.xml: |
+    <?xml version="1.0"?>
+    <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+    <configuration>
+      <property>
+        <name>hadoop.proxyuser.root.groups</name>
+        <value>*</value>
+      </property>
+      <property>
+        <name>hadoop.proxyuser.root.hosts</name>
+        <value>*</value>
+      </property>
+      <property>
+        <name>fs.defaultFS</name>
+        <value>hdfs://hdfs-k8s</value>
+      </property>
+      <property>
+        <name>ha.zookeeper.quorum</name>
+        <value>hdfs-zookeeper-1.hdfs-zookeeper-headless.apache-hdfs.svc.cluster.local:2181,hdfs-zookeeper-2.hdfs-zookeeper-headless.apache-hdfs.svc.cluster.local:2181,hdfs-zookeeper-0.hdfs-zookeeper-headless.apache-hdfs.svc.cluster.local:2181</value>
+      </property>
+    </configuration>
+  hdfs-site.xml: |
+    <?xml version="1.0"?>
+    <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+    <configuration>
+      <property>
+        <name>dfs.nameservices</name>
+        <value>hdfs-k8s</value>
+      </property>
+      <property>
+        <name>dfs.ha.namenodes.hdfs-k8s</name>
+        <value>nn0,nn1</value>
+      </property>
+      <property>
+        <name>dfs.namenode.rpc-address.hdfs-k8s.nn0</name>
+        <value>hdfs-namenode-0.hdfs-namenode.apache-hdfs.svc.cluster.local:8020</value>
+      </property>
+      <property>
+        <name>dfs.namenode.rpc-address.hdfs-k8s.nn1</name>
+        <value>hdfs-namenode-1.hdfs-namenode.apache-hdfs.svc.cluster.local:8020</value>
+      </property>
+      <property>
+        <name>dfs.namenode.http-address.hdfs-k8s.nn0</name>
+        <value>hdfs-namenode-0.hdfs-namenode.apache-hdfs.svc.cluster.local:50070</value>
+      </property>
+      <property>
+        <name>dfs.namenode.http-address.hdfs-k8s.nn1</name>
+        <value>hdfs-namenode-1.hdfs-namenode.apache-hdfs.svc.cluster.local:50070</value>
+      </property>
+      <property>
+        <name>dfs.namenode.shared.edits.dir</name>
+        <value>qjournal://hdfs-journalnode-1.hdfs-journalnode.apache-hdfs.svc.cluster.local:8485;hdfs-journalnode-2.hdfs-journalnode.apache-hdfs.svc.cluster.local:8485;hdfs-journalnode-0.hdfs-journalnode.apache-hdfs.svc.cluster.local:8485/hdfs-k8s</value>
+      </property>
+      <property>
+        <name>dfs.ha.automatic-failover.enabled</name>
+        <value>true</value>
+      </property>
+      <property>
+        <name>dfs.ha.fencing.methods</name>
+        <value>shell(/bin/true)</value>
+      </property>
+      <property>
+        <name>dfs.journalnode.edits.dir</name>
+        <value>/hadoop/dfs/journal</value>
+      </property>
+      <property>
+        <name>dfs.client.failover.proxy.provider.hdfs-k8s</name>
+        <value>org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider</value>
+      </property>
+      <property>
+        <name>dfs.namenode.name.dir</name>
+        <value>file:///hadoop/dfs/name</value>
+      </property>
+      <property>
+        <name>dfs.namenode.datanode.registration.ip-hostname-check</name>
+        <value>false</value>
+      </property>
+      <property>
+        <name>dfs.datanode.data.dir</name>
+        <value>/hadoop/dfs/data/0</value>
+      </property>
+    </configuration>
+binaryData: {}

@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "spark-thrift.name" . }}
+  labels: {{- include "spark-thrift.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+    - name: thrift
+      protocol: TCP
+      port: {{ index .Values "hadoopConfig" "hiveSite" "hive.server2.thrift.http.port" }}
+      targetPort: thrift
+    - name: driver
+      protocol: TCP
+      port: {{ index .Values "sparkDefaultsConfig" "spark.driver.port" }}
+      targetPort: driver
+    - name: manager
+      protocol: TCP
+      port: {{ index .Values "sparkDefaultsConfig" "spark.blockManager.port" }}
+      targetPort: manager
+  selector: {{- include "spark-thrift.selectorLabels" . | nindent 4 }}

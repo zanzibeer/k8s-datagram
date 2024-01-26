@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "livy.fullname" . }}
+  labels: {{- include "livy.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: livy-rest
+      protocol: TCP
+      name: livy-rest
+  selector: {{- include "livy.selectorLabels" . | nindent 4 }}

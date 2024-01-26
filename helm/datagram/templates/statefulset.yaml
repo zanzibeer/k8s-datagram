@@ -1,0 +1,123 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "datagram.fullname" . }}
+  labels: {{- include "datagram.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "datagram.fullname" . }}
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels: {{- include "datagram.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- if .Values.podAnnotations }}
+        {{- with .Values.podAnnotations }}
+      annotations: {{- toYaml . | nindent 8 }}
+        {{- end }}
+        checksum/config: {{ include (print $.Template.BasePath "/configmaps.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+      {{- else }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmaps.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secrets.yaml") . | sha256sum }}
+      {{- end }}
+
+      labels: {{- include "datagram.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "datagram.serviceAccountName" . }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          env:
+            - name: MAVEN_HOME
+              value: {{ .Values.datagram.mavenHome | quote }}
+            - name: MEM_MAX
+              value: {{ .Values.datagram.memoryMax | quote }}
+            - name: DATAGRAM_HOME
+              value: {{ .Values.datagram.datagramHome | quote }}
+            - name: DEPLOY_DIR
+              value: {{ printf "%s/%s" .Values.datagram.datagramHome .Values.datagram.deployDir | quote }}
+            - name: SERVER_PORT
+              value: {{ .Values.datagram.serverPort | quote }}
+            - name: TENEO_URL
+              value: {{ printf "jdbc:postgresql://%s-postgresql:5432/%s" (include "datagram.fullname" .) .Values.postgresql.auth.database | quote }}
+            - name: TENEO_USER
+              value: {{ .Values.postgresql.auth.username }}
+            - name: TENEO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "datagram.fullname" . }}
+                  key: postgresPassword
+          securityContext: {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.datagram.serverPort }}
+              protocol: TCP
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: {{ .Values.datagram.datagramHome }}/ldap.properties
+              name: ldap-properties
+              subPath: ldap.properties
+            - mountPath: {{ .Values.datagram.datagramHome }}/application.properties
+              name: application-properties
+              subPath: application.properties
+            - name: mspace
+              mountPath: {{ .Values.datagram.datagramHome }}/mspace
+            - name: gitflow
+              mountPath: {{ .Values.datagram.datagramHome }}/gitflow
+            - name: maven-cache
+              mountPath: {{ .Values.datagram.mavenCacheDir }}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - configMap:
+            defaultMode: 420
+            items:
+            - key: ldap.properties
+              path: ldap.properties
+            name: {{ include "datagram.fullname" . }}-cm
+          name: ldap-properties
+        - configMap:
+            defaultMode: 420
+            items:
+            - key: application.properties
+              path: application.properties
+            name: {{ include "datagram.fullname" . }}-cm
+          name: application-properties
+    {{- if not .Values.persistence.enabled }}
+      {{- range .Values.persistence.volumes }}
+        - name: {{ .name }}
+          emptyDir: {}
+      {{- end }}
+    {{- else }}
+  volumeClaimTemplates:
+      {{- range .Values.persistence.volumes }}
+  - metadata:
+      name: {{ .name }}
+    spec:
+      accessModes:
+      {{- range .accessModes }} 
+        - {{ . | quote }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .size }}
+    status:
+      phase: Pending
+      {{- end }}
+    {{- end }}

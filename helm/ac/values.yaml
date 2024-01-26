@@ -1,0 +1,125 @@
+# Default values for admin-console.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: docker-private.do.neoflex.ru/datagram/admin-console
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+# fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+# runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+  # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: { }
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+#   cpu: 100m
+#   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: { }
+
+tolerations: [ ]
+
+affinity: { }
+
+postgresql:
+  image:
+    tag: "15"
+  auth:
+    username: "ac"
+    password: "postgres"
+    database: "dg-admin-console"
+  primary:
+    persistence:
+      enabled: true
+
+persistence:
+  enabled: true
+  volumes:
+    - name: "configs"
+      storageClass: ""
+      size: 1Gi
+      accessModes:
+        - ReadWriteOnce
+      mountPath: "/opt/app/config"
+
+env:
+  POSTGRES_URL_CONSOLE: "jdbc:postgresql://admin-console-postgresql:5432/dg-admin-console"
+  AIRFLOW_URL: "http://airflow-webserver.apache-airflow.svc.cluster.local:8080"
+  KUBERNETES_SERT: "/opt/app/ca.crt"
+  PROMETHEUS_URL: "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090"
+  DATAGRAM_URL: "http://datagram.neoflex-datagram.svc.cluster.local"
+  KUBERNETES_URL: "https://kbrn-ctl01.ru-central1.internal:6443"
+  HTTP_LOGGING_LEVEL: "info"
+  JWT_SECRET_CONSOLE: "SecretKey"
+  JWT_EXPIRATION: "300000"
+
+secretEnv:
+  USER_NAME_BD_CONSOLE: "ac"
+  PASSWORD_BD_CONSOLE: "postgres"
+  AIRFLOW_USER: "admin"
+  AIRFLOW_PASSWORD: "admin"
+  DATAGRAM_USER: "admin"
+  DATAGRAM_PASSWORD: "admin"
+  KUBERNETES_TOKEN: "eyJhbGciOiJSUzI1NiIsImtpZCI6IkpVZldhcHoyYkd6LUJ6cHYtRURLeXpKRmZ5bWxnTVRtd0xxS2lJaVpNcW8ifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJjbHVzdGVyLXJlYWRlci10b2tlbi1nbDZoeCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJjbHVzdGVyLXJlYWRlciIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjgxZjFkNTg4LTU5Y2EtNDAzYi04ODdhLWMwZWU1ZWM0MzNjYiIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDprdWJlLXN5c3RlbTpjbHVzdGVyLXJlYWRlciJ9.KhUiNdIW6kiHZaJRmApzHzdLALb02qyzexQ3Sq-RNNClaK-LqmusiwWrde9RzvhBKf41zqn0t4pRsmAFsBk8p_4SGFD3Zns8pLSX-fgqKWPDGscc54CPq2D0j41fPezEChJnXRNRD-0HJqOYevzi3wnskU4qS7PkLaumt_Hwqr3054Q76bAomVX_0Zf15Ci2TttW8zYhtke95xv6y5KJVI-ytuEpdFkZn8yL1bQzlfIu1AIHyMizBQx-_IQHARzXfSZ9n5v4pcpxjalNwv480F_8gCxFxx8QEgFBhiG1dLj5oJTSHW5a5idyVjnXG3qU_VmF0XWOIRRFQj8za_FaNA"
+
+

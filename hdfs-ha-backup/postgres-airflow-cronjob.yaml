@@ -1,0 +1,72 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-backup-airflow
+  namespace: pgadmin4
+  labels:
+    k8slens-edit-resource-version: v1
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: >
+      {"apiVersion":"batch/v1","kind":"CronJob","metadata":{"annotations":{},"creationTimestamp":"2023-07-12T12:43:55Z","generation":2,"labels":{"k8slens-edit-resource-version":"v1"},"managedFields":[{"apiVersion":"batch/v1","fieldsType":"FieldsV1","fieldsV1":{"f:metadata":{"f:annotations":{".":{},"f:kubectl.kubernetes.io/last-applied-configuration":{}}},"f:spec":{"f:concurrencyPolicy":{},"f:failedJobsHistoryLimit":{},"f:jobTemplate":{"f:spec":{"f:template":{"f:spec":{"f:containers":{"k:{\"name\":\"postgres-backup\"}":{".":{},"f:command":{},"f:image":{},"f:imagePullPolicy":{},"f:name":{},"f:resources":{},"f:terminationMessagePath":{},"f:terminationMessagePolicy":{},"f:volumeMounts":{".":{},"k:{\"mountPath\":\"/postgres_backup\"}":{".":{},"f:mountPath":{},"f:name":{}}}}},"f:dnsPolicy":{},"f:restartPolicy":{},"f:schedulerName":{},"f:securityContext":{},"f:terminationGracePeriodSeconds":{},"f:volumes":{".":{},"k:{\"name\":\"postgres-backup-storage\"}":{".":{},"f:name":{},"f:persistentVolumeClaim":{".":{},"f:claimName":{}}}}}}}},"f:schedule":{},"f:successfulJobsHistoryLimit":{},"f:suspend":{}}},"manager":"kubectl-client-side-apply","operation":"Update","time":"2023-07-12T12:43:55Z"},{"apiVersion":"batch/v1","fieldsType":"FieldsV1","fieldsV1":{"f:metadata":{"f:labels":{".":{},"f:k8slens-edit-resource-version":{}}},"f:spec":{"f:jobTemplate":{"f:spec":{"f:template":{"f:spec":{"f:containers":{"k:{\"name\":\"postgres-backup\"}":{"f:args":{}}}}}}}}},"manager":"node-fetch","operation":"Update","time":"2023-07-12T12:49:59Z"},{"apiVersion":"batch/v1","fieldsType":"FieldsV1","fieldsV1":{"f:status":{"f:lastSuccessfulTime":{}}},"manager":"kube-controller-manager","operation":"Update","subresource":"status","time":"2023-07-12T12:54:07Z"}],"name":"postgres-backup-airflow","namespace":"pgadmin4","selfLink":"/apis/batch/v1/namespaces/pgadmin4/cronjobs/postgres-backup-ac-airflow","uid":"376a719f-fdf0-4323-ba76-07276b5708b9"},"spec":{"concurrencyPolicy":"Allow","failedJobsHistoryLimit":1,"jobTemplate":{"metadata":{"creationTimestamp":null},"spec":{"template":{"metadata":{"creationTimestamp":null},"spec":{"containers":[{"args":["export
+      TZ=\"Europe/Moscow\"; echo \"$(date +\"%D %T\") Starting postgresql backup
+      job=======================\" \u003e\u003e /postgres_backup/backup.log;
+      echo \"$(date +\"%D %T\") Backup database apache-airflow is starting\"
+      \u003e\u003e /postgres_backup/backup.log; pg_dump -h
+      \"airflow-postgresql.apache-airflow\" -d \"postgres\" -U \"postgres\" -v
+      -Fc -b -f \"/postgres_backup/apache-airflow/apache-airflow_$(date
+      +\"%m.%d.%y-%H-%M\").sql\"; echo \"$(date +\"%D %T\") Dump database
+      apache-airflow completed\" \u003e\u003e /postgres_backup/backup.log; echo
+      \"$(date +\"%D %T\") Postgresql backup job successed and
+      close============\" \u003e\u003e
+      /postgres_backup/backup.log;"],"command":["/bin/sh","-c"],"image":"prodrigestivill/postgres-backup-local:11-alpine","imagePullPolicy":"IfNotPresent","name":"postgres-backup","resources":{},"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File","volumeMounts":[{"mountPath":"/postgres_backup","name":"postgres-backup-storage"}]}],"dnsPolicy":"ClusterFirst","restartPolicy":"OnFailure","schedulerName":"default-scheduler","securityContext":{},"terminationGracePeriodSeconds":30,"volumes":[{"name":"postgres-backup-storage","persistentVolumeClaim":{"claimName":"postgres-backup-pvc"}}]}}}},"schedule":"45
+      15 * * *","successfulJobsHistoryLimit":3,"suspend":false}}
+spec:
+  schedule: 45 14 * * *
+  concurrencyPolicy: Allow
+  suspend: false
+  jobTemplate:
+    metadata:
+      creationTimestamp: null
+    spec:
+      template:
+        metadata:
+          creationTimestamp: null
+        spec:
+          volumes:
+            - name: postgres-backup-storage
+              persistentVolumeClaim:
+                claimName: postgres-backup-pvc
+          containers:
+            - name: postgres-backup
+              image: prodrigestivill/postgres-backup-local:11-alpine
+              command:
+                - /bin/sh
+                - '-c'
+              args:
+                - >-
+                  export TZ="Europe/Moscow"; echo "$(date +"%D %T") Starting
+                  postgresql backup job=======================" >>
+                  /postgres_backup/backup.log; echo "$(date +"%D %T") Backup
+                  database apache-airflow is starting" >>
+                  /postgres_backup/backup.log; export PGPASSWORD=postgres;
+                  pg_dump -h "airflow-postgresql.apache-airflow" -d "postgres"
+                  -U "postgres" -v -Fc -b -f
+                  "/postgres_backup/apache-airflow/apache-airflow_$(date
+                  +"%m.%d.%y-%H-%M").sql"; echo "$(date +"%D %T") Dump database
+                  apache-airflow completed" >> /postgres_backup/backup.log; echo
+                  "$(date +"%D %T") Postgresql backup job successed and
+                  close============" >> /postgres_backup/backup.log;
+              resources: {}
+              volumeMounts:
+                - name: postgres-backup-storage
+                  mountPath: /postgres_backup
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+              imagePullPolicy: IfNotPresent
+          restartPolicy: OnFailure
+          terminationGracePeriodSeconds: 30
+          dnsPolicy: ClusterFirst
+          securityContext: {}
+          schedulerName: default-scheduler
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1

@@ -1,0 +1,56 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: check-active-namenode
+  namespace: apache-hdfs
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: >
+      {"apiVersion":"batch/v1beta1","kind":"CronJob","metadata":{"annotations":{},"name":"check-active-namenode","namespace":"apache-hdfs"},"spec":{"jobTemplate":{"spec":{"template":{"spec":{"containers":[{"command":["/bin/sh","-c","date;
+      echo Hello from the Kubernetes cluster; kubectl get
+      nodes"],"image":"busybox","imagePullPolicy":"IfNotPresent","name":"hello"}],"restartPolicy":"OnFailure"}}}},"schedule":"*/1
+      * * * *"}}
+status:
+  active:
+    - kind: Job
+      namespace: apache-hdfs
+      name: check-active-namenode-28161413
+      uid: e651d2fb-e555-496b-8195-137e4642ab34
+      apiVersion: batch/v1
+      resourceVersion: '3481595'
+  lastScheduleTime: '2023-07-18T12:53:00Z'
+spec:
+  schedule: '*/1 * * * *'
+  concurrencyPolicy: Allow
+  suspend: false
+  jobTemplate:
+    metadata:
+      creationTimestamp: null
+    spec:
+      template:
+        metadata:
+          creationTimestamp: null
+        spec:
+       
+          containers:
+            - name: kubectl
+              image: djieno/alpine-curl-kubectl:amd64
+              command:
+                - /bin/sh
+                - '-c'
+                - >-
+                  curl --connect-timeout 5  http://hdfs-namenode-0.hdfs-namenode.apache-hdfs.svc.cluster.local:50070/jmx?qry=Hadoop:service=NameNode,name=NameNodeStatus;
+                  curl --connect-timeout 5  http://hdfs-namenode-1.hdfs-namenode.apache-hdfs.svc.cluster.local:50070/jmx?qry=Hadoop:service=NameNode,name=NameNodeStatus;
+                  if [[ $(curl -s --connect-timeout 5  http://hdfs-namenode-0.hdfs-namenode.apache-hdfs.svc.cluster.local:50070/jmx?qry=Hadoop:service=NameNode,name=NameNodeStatus  | grep -c active) -ge 1 ]]; then echo NN0 is ACTIVE; kubectl label pods hdfs-namenode-0 -n apache-hdfs state=active --overwrite; else echo NN0 is STANDBY; kubectl label pods hdfs-namenode-0 -n apache-hdfs state=standby --overwrite; fi;
+                  if [[ $(curl -s --connect-timeout 5  http://hdfs-namenode-1.hdfs-namenode.apache-hdfs.svc.cluster.local:50070/jmx?qry=Hadoop:service=NameNode,name=NameNodeStatus  | grep -c active) -ge 1 ]]; then echo NN1 is ACTIVE; kubectl label pods hdfs-namenode-1 -n apache-hdfs state=active --overwrite;  else echo NN1 is STANDBY; kubectl label pods hdfs-namenode-1 -n apache-hdfs state=standby --overwrite; fi;
+              resources: {}
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+              imagePullPolicy: IfNotPresent
+          restartPolicy: OnFailure
+          terminationGracePeriodSeconds: 30
+          serviceAccountName: hdfs
+          dnsPolicy: ClusterFirst
+          securityContext: {}
+          schedulerName: default-scheduler
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1

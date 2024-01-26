@@ -1,0 +1,88 @@
+# A headless service to create DNS records.
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "hdfs-k8s.namenode.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ template "hdfs-k8s.namenode.name" . }}
+    helm.sh/chart: {{ template "hdfs-k8s.subchart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  ports:
+  - port: 8020
+    name: fs
+  - port: 50070
+    name: http
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: {{ template "hdfs-k8s.namenode.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  publishNotReadyAddresses: true
+--- 
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ template "hdfs-k8s.namenode.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ template "hdfs-k8s.namenode.name" . }}
+    helm.sh/chart: {{ template "hdfs-k8s.subchart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ template "hdfs-k8s.namenode.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  serviceName: {{ template "hdfs-k8s.namenode.fullname" . }}
+  # Create a size-1 set.
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ template "hdfs-k8s.namenode.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+      {{- if .Values.podAnnotations }}
+      annotations: {{- toYaml .Values.podAnnotations | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- if .Values.affinity }}
+      affinity: {{- toYaml .Values.affinity | nindent 8 }}
+      {{- end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations: {{- toYaml .Values.tolerations | nindent 8 }}
+      {{- end }}
+      # Use hostNetwork so datanodes connect to namenode without going through an overlay network
+      # like weave. Otherwise, namenode fails to see physical IP address of datanodes.
+      hostNetwork: true
+      hostPID: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+        - name: hdfs-namenode
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: HADOOP_CUSTOM_CONF_DIR
+              value: /etc/hadoop-custom-conf
+            - name: CLUSTER_NAME
+              value: hdfs-k8s
+          ports:
+          - containerPort: 8020
+            name: fs
+          - containerPort: 50070
+            name: http
+          volumeMounts:
+            - name: hdfs-name
+              mountPath: /hadoop/dfs/name
+            - name: hdfs-config
+              mountPath: /etc/hadoop-custom-conf
+              readOnly: true
+      restartPolicy: Always
+      volumes:
+        - name: hdfs-name
+          hostPath:
+            path: {{ .Values.nameNodeHostPath }}
+        - name: hdfs-config
+          configMap:
+            name: {{ template "hdfs-k8s.config.fullname" . }}

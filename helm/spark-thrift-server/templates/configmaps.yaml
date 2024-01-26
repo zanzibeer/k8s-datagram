@@ -1,0 +1,9 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ template "spark-thrift.name" . }}
+data:
+  {{- include "hive.configmap" . | nindent 2 }}
+  {{- include "spark.configmap" . | nindent 2 }}
+
+

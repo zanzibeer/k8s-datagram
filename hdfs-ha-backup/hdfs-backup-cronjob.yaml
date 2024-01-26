@@ -1,0 +1,68 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: hdfs-backup
+  namespace: apache-hdfs
+  labels:
+    k8slens-edit-resource-version: v1
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: >
+      {"apiVersion":"batch/v1","kind":"CronJob","metadata":{"annotations":{},"name":"hdfs-backup","namespace":"apache-hdfs"},"spec":{"concurrencyPolicy":"Allow","failedJobsHistoryLimit":1,"jobTemplate":{"metadata":{"creationTimestamp":null},"spec":{"template":{"metadata":{"creationTimestamp":null},"spec":{"containers":[{"args":["hadoop
+      fs -copyToLocal /user/root/deployments /hdfs_backup/; tar -zcvf
+      hdfs-backup-$(date+\"%m.%d.%y-%H-%M\").tar.gz
+      /hdfs_backup/;"],"command":["/bin/sh","-c"],"env":[{"name":"HADOOP_CUSTOM_CONF_DIR","value":"/etc/hadoop-custom-conf"},{"name":"MULTIHOMED_NETWORK","value":"0"}],"image":"docker-private.do.neoflex.ru/datagram/hadoop/k8s-hadoop:2.9.1","imagePullPolicy":"IfNotPresent","name":"hdfs-backup-client","resources":{},"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File","volumeMounts":[{"mountPath":"/hdfs_backup","name":"hdfs-backup-storage"},{"mountPath":"/etc/hadoop-custom-conf","name":"hdfs-config","readOnly":true}]}],"dnsPolicy":"ClusterFirst","restartPolicy":"OnFailure","schedulerName":"default-scheduler","securityContext":{},"terminationGracePeriodSeconds":30,"volumes":[{"name":"hdfs-backup-storage","persistentVolumeClaim":{"claimName":"hdfs-backup-pvc"}},{"configMap":{"defaultMode":420,"name":"hdfs-config"},"name":"hdfs-config"}]}}}},"schedule":"45
+      15 * * *","successfulJobsHistoryLimit":10,"suspend":false}}
+spec:
+  schedule: 45 14 * * *
+  concurrencyPolicy: Allow
+  suspend: false
+  jobTemplate:
+    metadata:
+      creationTimestamp: null
+    spec:
+      template:
+        metadata:
+          creationTimestamp: null
+        spec:
+          volumes:
+            - name: hdfs-backup-storage
+              persistentVolumeClaim:
+                claimName: hdfs-backup-pvc
+            - name: hdfs-config
+              configMap:
+                name: hdfs-config
+                defaultMode: 420
+          containers:
+            - name: hdfs-backup-client
+              image: docker-private.do.neoflex.ru/datagram/hadoop/k8s-hadoop:2.9.1
+              command:
+                - /bin/sh
+                - '-c'
+              args:
+                - >-
+                  export TZ="Europe/Moscow"; rm -rf /hdfs_backup/local_copy/*;
+                  cd /hdfs_backup/local_copy;  hadoop --config
+                  /etc/hadoop-custom-conf/ fs -copyToLocal /user .; tar -zcvf
+                  ../hdfs_archive/hdfs-$(date +"%m.%d.%y-%H-%M").tar.gz .;
+              env:
+                - name: HADOOP_CUSTOM_CONF_DIR
+                  value: /etc/hadoop-custom-conf
+                - name: MULTIHOMED_NETWORK
+                  value: '0'
+              resources: {}
+              volumeMounts:
+                - name: hdfs-backup-storage
+                  mountPath: /hdfs_backup
+                - name: hdfs-config
+                  readOnly: true
+                  mountPath: /etc/hadoop-custom-conf
+              terminationMessagePath: /dev/termination-log
+              terminationMessagePolicy: File
+              imagePullPolicy: IfNotPresent
+          restartPolicy: OnFailure
+          terminationGracePeriodSeconds: 30
+          dnsPolicy: ClusterFirst
+          securityContext: {}
+          schedulerName: default-scheduler
+  successfulJobsHistoryLimit: 10
+  failedJobsHistoryLimit: 1

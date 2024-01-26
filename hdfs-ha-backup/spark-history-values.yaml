@@ -1,0 +1,9 @@
+extraSparkConfigs:
+  - "spark.history.fs.cleaner.enabled=true"
+  - "spark.hadoop.fs.defaultFS=hdfs://hdfs-k8s"
+  - "spark.hadoop.fs.default.name=hdfs://hdfs-k8s"
+  - "spark.hadoop.dfs.nameservices=hdfs-k8s"
+  - "spark.hadoop.dfs.ha.namenodes.hdfs-k8s=nn0,nn1"
+  - "spark.hadoop.dfs.namenode.rpc-address.hdfs-k8s.nn0=hdfs-namenode-0.hdfs-namenode.apache-hdfs.svc.cluster.local:8020"
+  - "spark.hadoop.dfs.namenode.rpc-address.hdfs-k8s.nn1=hdfs-namenode-1.hdfs-namenode.apache-hdfs.svc.cluster.local:8020"
+  - "spark.hadoop.dfs.client.failover.proxy.provider.hdfs-k8s=org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider"

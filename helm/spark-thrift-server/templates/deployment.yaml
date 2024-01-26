@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "spark-thrift.name" . }}
+  labels: {{- include "spark-thrift.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels: {{- include "spark-thrift.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- if .Values.podAnnotations }}
+        {{- with .Values.podAnnotations }}
+      annotations: {{- toYaml . | nindent 8 }}
+        {{- end }}
+        checksum/config: {{ include (print $.Template.BasePath "/configmaps.yaml") . | sha256sum }}
+      {{- else }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmaps.yaml") . | sha256sum }}
+      {{- end }}
+      labels: {{- include "spark-thrift.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "spark-thrift.serviceAccountName" . }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - "/bin/sh"
+            - "-c"
+            - '/opt/spark/sbin/start-thriftserver.sh'
+          env:
+            - name: SPARK_NO_DAEMONIZE
+              value: "false"
+            - name: SPARK_CONF_DIR
+              value: /opt/spark/conf
+            - name: AWS_ROLE_SESSION_NAME
+              value: "spark-thrift"
+          ports:
+            - name: http
+              containerPort: 4040
+              protocol: TCP
+            - name: thrift
+              containerPort: {{ index .Values "hadoopConfig" "hiveSite" "hive.server2.thrift.http.port" }}
+              protocol: TCP
+            - name: driver
+              containerPort: {{ index .Values "sparkDefaultsConfig" "spark.driver.port" }}
+              protocol: TCP
+            - name: manager
+              containerPort: {{ index .Values "sparkDefaultsConfig" "spark.blockManager.port" }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: spark-config
+              mountPath: /opt/spark/conf/spark-defaults.conf
+              subPath: spark-defaults.conf
+            - mountPath: /opt/spark/conf/hive-site.xml
+              name: hadoop-hive-site
+              subPath: hive-site.xml
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - configMap:
+            defaultMode: 420
+            items:
+            - key: spark-defaults.conf
+              path: spark-defaults.conf
+            name: {{ template "spark-thrift.name" . }}
+          name: spark-config
+        - configMap:
+            defaultMode: 420
+            items:
+            - key: hive-site.xml
+              path: hive-site.xml
+            name: {{ template "spark-thrift.name" . }}
+          name: hadoop-hive-site

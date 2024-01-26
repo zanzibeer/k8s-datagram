@@ -1,0 +1,5 @@
+extraSecrets:
+  airflow-git-creds:
+    stringData: |
+      GIT_SYNC_PASSWORD: admin
+      GIT_SYNC_USERNAME: admin
