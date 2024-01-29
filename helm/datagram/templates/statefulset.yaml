@@ -83,8 +83,6 @@ spec:
       {{- end }}
       {{- with .Values.tolerations }}
       tolerations: {{- toYaml . | nindent 8 }}
-      imagePullSecrets:
-        - name: docker-secret
       {{- end }}
       volumes:
         - configMap:

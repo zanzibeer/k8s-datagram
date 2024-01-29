@@ -29,7 +29,8 @@ image:
   # Overrides the image tag whose default is the chart appVersion.
   tag: "redesign-0.37"
 
-imagePullSecrets: []
+imagePullSecrets:
+  - docker-secret
 nameOverride: ""
 fullnameOverride: ""
 
