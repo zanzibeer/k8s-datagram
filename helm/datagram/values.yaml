@@ -24,10 +24,10 @@ datagram:
 replicaCount: 1
 
 image:
-  repository: docker-private.do.neoflex.ru/datagram/datagram
+  repository: registry.neomsa.ru/docker-neofoundation/datagram
   pullPolicy: Always #IfNotPresent (IfNotPresent not working with latest tag)
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
+  tag: "redesign-0.37"
 
 imagePullSecrets: []
 nameOverride: ""
