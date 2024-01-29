@@ -180,7 +180,7 @@ hdfs-datanode-k8s:
 ## ------------------------------------------------------------------------------
 hdfs-client-k8s:
   image:
-    repository: "registry.neomsa.ru/docker-neofoundation/hadoop/hadoop-hadoop"
+    repository: "registry.neomsa.ru/docker-neofoundation/hadoop/hadoop"
     pullPolicy: IfNotPresent
     tag: "2.7.2"
   ## Node labels and tolerations for pod assignment
