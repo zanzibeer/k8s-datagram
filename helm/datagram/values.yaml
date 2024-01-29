@@ -30,7 +30,7 @@ image:
   tag: "redesign-0.37"
 
 imagePullSecrets:
-  - docker-secret
+  - name: docker-secret
 nameOverride: ""
 fullnameOverride: ""
 
