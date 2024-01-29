@@ -83,8 +83,8 @@ spec:
         - name: docker-secret
       volumes:
         - name: hdfs-name
-          hostPath:
-            path: {{ .Values.nameNodeHostPath }}
+          persistentVolumeClaim:
+            claimName: data-namenode-hdfs-0
         - name: hdfs-config
           configMap:
             name: {{ template "hdfs-k8s.config.fullname" . }}
