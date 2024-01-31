@@ -15,7 +15,8 @@ kubectlImage:
   pullPolicy: IfNotPresent
   tag: "1.24.2"
 
-imagePullSecrets: []
+imagePullSecrets:
+  - name: docker-secret
 nameOverride: ""
 fullnameOverride: ""
 

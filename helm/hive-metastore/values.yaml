@@ -14,6 +14,8 @@ image:
   tag: 0.1.1
   pullPolicy: IfNotPresent
 
+imagePullSecrets:
+  - name: docker-secret
 
 env:
   HIVE_DB_EXTERNAL: "true"
