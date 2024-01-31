@@ -8,7 +8,7 @@ image:
   repository: registry.neomsa.ru/docker-neofoundation/admin-console
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
+  tag: "0.175"
 
 imagePullSecrets:
   - name: docker-secret
