@@ -336,7 +336,7 @@ EOF
 
 helm repo add apache-airflow https://airflow.apache.org
 
-helm upgrade --install ${K8S_AIRFLOW_NAME} apache-airflow/airflow \
+helm upgrade --install ${K8S_AIRFLOW_NAME} apache-airflow/airflow --version 1.7.0 \
   --namespace ${K8S_AIRFLOW_NAMESPACE} --create-namespace \
   --set config.webserver.expose_config="true" \
   --set ingress.web.enabled="true" \
