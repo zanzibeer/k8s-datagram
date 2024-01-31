@@ -115,6 +115,9 @@ EOF
 
 read -p "Press [ENTER] for continue..."
 
+kubectl create namespace apache-hdfs
+kubectl label ns apache-hdfs security.deckhouse.io/pod-policy=priveleged
+
 helm repo add bitnami https://charts.bitnami.com/bitnami
 
 helm dependency build ./helm/hdfs/charts/hdfs-k8s
@@ -478,6 +481,9 @@ Installing Elasticsearch...
 =======================
 
 EOF
+
+kubectl create namespace logging
+kubectl label ns logging security.deckhouse.io/pod-policy=priveleged
 
 helm upgrade --install ${K8S_EFK_NAME} bitnami/elasticsearch --namespace ${K8S_EFK_NAMESPACE} --create-namespace \
   --set global.kibanaEnabled="true" \

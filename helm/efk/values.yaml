@@ -2291,7 +2291,7 @@ volumePermissions:
 sysctlImage:
   ## @param sysctlImage.enabled Enable kernel settings modifier image
   ##
-  enabled: false
+  enabled: true
   ## @param sysctlImage.registry [default: REGISTRY_NAME] Kernel settings modifier image registry
   ## @param sysctlImage.repository [default: REPOSITORY_NAME/os-shell] Kernel settings modifier image repository
   ## @skip sysctlImage.tag Kernel settings modifier image tag
