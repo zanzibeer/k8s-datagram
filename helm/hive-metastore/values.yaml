@@ -10,7 +10,7 @@ replicaCount: 1
 
 ## Default Hive image and tag. Please build image locally before applying this.
 image:
-  name: docker-private.do.neoflex.ru/datagram/k8s-hive
+  name: registry.neomsa.ru/docker-neofoundation/k8s-hive
   tag: 0.1.1
   pullPolicy: IfNotPresent
 

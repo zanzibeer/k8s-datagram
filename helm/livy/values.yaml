@@ -5,13 +5,13 @@
 replicaCount: 1
 
 livyImage:
-  repository: docker-private.do.neoflex.ru/datagram/livy/livy-spark
+  repository: registry.neomsa.ru/docker-neofoundation/livy/livy-spark
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: "0.8.0-3.1.3"
 
 kubectlImage:
-  repository: docker-private.do.neoflex.ru/datagram/livy/kubectl-sidecar
+  repository: registry.neomsa.ru/docker-neofoundation/livy/kubectl-sidecar
   pullPolicy: IfNotPresent
   tag: "1.24.2"
 

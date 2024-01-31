@@ -238,7 +238,7 @@ done
 
 DGTMP=$(mktemp -d -t dg-git-tmp-XXXXXXXXXX)
 
-git clone https://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@github.com/neoflex-consulting/datagram ${DGTMP}
+git clone https://${GITHUB_TOKEN}@github.com/neoflex-consulting/datagram ${DGTMP}
 
 EXTRALIB_BASE="${DGTMP}/bd-runtime/bd-base/extralib/"
 
