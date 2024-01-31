@@ -5,12 +5,13 @@
 replicaCount: 1
 
 image:
-  repository: docker-private.do.neoflex.ru/datagram/admin-console
+  repository: registry.neomsa.ru/docker-neofoundation/admin-console
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"
 
-imagePullSecrets: []
+imagePullSecrets:
+  - name: docker-secret
 nameOverride: ""
 fullnameOverride: ""
 
