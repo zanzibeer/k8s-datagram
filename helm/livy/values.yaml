@@ -45,6 +45,7 @@ livyConfig: {}
 sparkDefaultsConfig: 
   ## Set config key and value pairs, e.g.
   spark.kubernetes.container.image: "registry.neomsa.ru/docker-neofoundation/k8s-spark:v3.1.3"
+  spark.kubernetes.container.image.pullSecrets: "docker-secret"
 
 hadoopConfig:
   coreSite:
