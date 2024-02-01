@@ -223,9 +223,12 @@ HDFS_NAMENODE_SERVICE="$(kubectl -n ${K8S_HDFS_NAMESPACE} get services --no-head
 HDFS_NAMENODE_ADDRESS="${HDFS_NAMENODE_POD}.${HDFS_NAMENODE_SERVICE}.${K8S_HDFS_NAMESPACE}.svc.${K8S_CLUSTER_INTERNAL_DNS}"
 PING_RESULT=""
 
+echo $HDFS_NAMENODE_ADDRESS
+
 while [ -z "${PING_RESULT}" ]
 do
   LOCATION_HOSTNAME="$(curl --silent --include --request PUT --url "http://${HDFS_NAMENODE_ADDRESS}:50070/webhdfs/v1/tmp/testfile?op=CREATE" | grep -E '^Location:' | awk '{print $2}' | sed -e 's~http://~~g' -e 's~:.*~~g' )"
+  echo $LOCATION_HOSTNAME
   PING_RESULT=$(ping -c 4 -q ${LOCATION_HOSTNAME} | grep 'packet loss')
   if [ -z "${PING_RESULT}" ]
   then
