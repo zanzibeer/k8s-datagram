@@ -1,8 +1,8 @@
 # Postgresql variables which overwrites "postgresql" chart variables.
 postgresql:
   image:
-#    tag: "9.6-debian-10"
-    tag: "11"
+    tag: "9.6-debian-10"
+#    tag: "11"
   auth:
     username: "datagram"
     password: ""
