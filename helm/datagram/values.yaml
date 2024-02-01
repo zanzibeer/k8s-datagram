@@ -2,7 +2,7 @@
 postgresql:
   image:
 #    tag: "9.6-debian-10"
-    tag: "13"
+    tag: "12"
   auth:
     username: "datagram"
     password: ""
