@@ -296,7 +296,6 @@ Add Livy and Airflow connections to Datagram...
 =======================
 EOF
 
-sleep 30
 curl --user $DATAGRAM_USERNAME:$DATAGRAM_PASSWORD --request POST --header "Content-Type: application/json" --data-binary @- "http://${K8S_DATAGRAM_NAME}.${K8S_DATAGRAM_NAMESPACE}.svc.${K8S_CLUSTER_INTERNAL_DNS}/api/teneo/rt.LivyServer" << EOD
 {
 "mode": "cluster",
