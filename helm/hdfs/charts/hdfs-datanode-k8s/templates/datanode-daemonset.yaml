@@ -39,8 +39,8 @@ spec:
       tolerations: 
         {{- toYaml .Values.tolerations | nindent 8 }}
       {{- end }}
-      hostNetwork: false
-      hostPID: false
+      hostNetwork: true
+      hostPID: true
       dnsPolicy: ClusterFirstWithHostNet
       containers:
         - name: datanode
@@ -74,7 +74,7 @@ spec:
             initialDelaySeconds: 60
             periodSeconds: 30
           securityContext:
-            privileged: false
+            privileged: true
           volumeMounts:
             - name: dn-scripts
               mountPath: /dn-scripts
@@ -82,8 +82,6 @@ spec:
             - name: hdfs-config
               mountPath: /etc/hadoop-custom-conf
               readOnly: true
-            - name: hdfs-data-0
-              mountPath: /hadoop/dfs/data/0
             {{- range $index, $path := .Values.global.dataNodeHostPath }}
             - name: hdfs-data-{{ $index }}
               mountPath: /hadoop/dfs/data/{{ $index }}
@@ -138,9 +136,6 @@ spec:
           configMap:
             name: {{ template "hdfs-k8s.datanode.fullname" . }}-scripts
             defaultMode: 0744
-        - name: hdfs-data-0
-          persistentVolumeClaim:
-            claimName: data-datanode-hdfs-0
         {{- range $index, $path := .Values.global.dataNodeHostPath }}
         - name: hdfs-data-{{ $index }}
           hostPath:

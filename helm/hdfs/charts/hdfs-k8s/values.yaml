@@ -33,6 +33,8 @@ hdfs-config-k8s:
 ## hdfs-journalnode-k8s:
 ## ------------------------------------------------------------------------------
 hdfs-journalnode-k8s:
+  imagePullSecrets:
+    - name: docker-secret
   image:
     repository: "registry.neomsa.ru/docker-neofoundation/hadoop/hadoop-namenode"
     pullPolicy: IfNotPresent
@@ -63,6 +65,8 @@ hdfs-journalnode-k8s:
 ## hdfs-namenode-k8s:
 ## ------------------------------------------------------------------------------
 hdfs-namenode-k8s:
+  imagePullSecrets:
+    - name: docker-secret
   image:
     repository: "registry.neomsa.ru/docker-neofoundation/hadoop/hadoop-namenode"
     pullPolicy: IfNotPresent
@@ -132,6 +136,8 @@ hdfs-namenode-k8s:
 ## hdfs-simple-namenode-k8s:
 ## ------------------------------------------------------------------------------
 hdfs-simple-namenode-k8s:
+  imagePullSecrets:
+    - name: docker-secret
   image:
     repository: "registry.neomsa.ru/docker-neofoundation/hadoop/hadoop-namenode"
     pullPolicy: IfNotPresent
@@ -166,6 +172,8 @@ hdfs-simple-namenode-k8s:
 ## hdfs-datanode-k8s:
 ## ------------------------------------------------------------------------------
 hdfs-datanode-k8s:
+  imagePullSecrets:
+    - name: docker-secret
   image:
     repository: "registry.neomsa.ru/docker-neofoundation/hadoop/hadoop-datanode"
     pullPolicy: IfNotPresent
@@ -179,6 +187,8 @@ hdfs-datanode-k8s:
 ## hdfs-client-k8s:
 ## ------------------------------------------------------------------------------
 hdfs-client-k8s:
+  imagePullSecrets:
+    - name: docker-secret
   image:
     repository: "registry.neomsa.ru/docker-neofoundation/hadoop/hadoop"
     pullPolicy: IfNotPresent
@@ -237,8 +247,8 @@ global:
   ## blocks. These paths will be mounted to the datanode as K8s HostPath volumes.
   ## In a command line, the list should be enclosed in '{' and '}'.
   ## e.g. --set "dataNodeHostPath={/hdfs-data,/hdfs-data1}"
-#  dataNodeHostPath:
-#    - /hdfs-data
+  dataNodeHostPath:
+    - /hdfs-data
 
   ## Parameters for determining which Unix user and group IDs to use in pods.
   ## Persistent volume permission may need to match these.

@@ -55,8 +55,8 @@ spec:
       {{- end }}
       # Use hostNetwork so datanodes connect to namenode without going through an overlay network
       # like weave. Otherwise, namenode fails to see physical IP address of datanodes.
-      hostNetwork: false
-      hostPID: false
+      hostNetwork: true
+      hostPID: true
       dnsPolicy: ClusterFirstWithHostNet
       containers:
         - name: hdfs-namenode
@@ -83,8 +83,8 @@ spec:
         - name: docker-secret
       volumes:
         - name: hdfs-name
-          persistentVolumeClaim:
-            claimName: data-namenode-hdfs-0
+          hostPath:
+            path: {{ .Values.nameNodeHostPath }}
         - name: hdfs-config
           configMap:
             name: {{ template "hdfs-k8s.config.fullname" . }}
