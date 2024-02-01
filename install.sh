@@ -223,21 +223,21 @@ HDFS_NAMENODE_SERVICE="$(kubectl -n ${K8S_HDFS_NAMESPACE} get services --no-head
 HDFS_NAMENODE_ADDRESS="${HDFS_NAMENODE_POD}.${HDFS_NAMENODE_SERVICE}.${K8S_HDFS_NAMESPACE}.svc.${K8S_CLUSTER_INTERNAL_DNS}"
 PING_RESULT=""
 
-#while [ -z "${PING_RESULT}" ]
-#do
-#  LOCATION_HOSTNAME="$(curl --silent --include --request PUT --url "http://${HDFS_NAMENODE_ADDRESS}:50070/webhdfs/v1/tmp/testfile?op=CREATE" | grep -E '^Location:' | awk '{print $2}' | sed -e 's~http://~~g' -e 's~:.*~~g' )"
-#  PING_RESULT=$(ping -c 4 -q ${LOCATION_HOSTNAME} | grep 'packet loss')
-#  if [ -z "${PING_RESULT}" ]
-#  then
-#    K8S_NODE_ADDRESS="$(kubectl get nodes ${LOCATION_HOSTNAME} -o jsonpath='{.status.addresses[0].address}')"
-#    cat<<EOF
-## Hostname "${LOCATION_HOSTNAME}" of k8s cluster's node is not resolved.
-## Add record with pair IP-address and hostname to /etc/hosts for example:
-#${K8S_NODE_ADDRESS} ${LOCATION_HOSTNAME}
-#EOF
-#    read -p "Press [ENTER] for continue..."
-#  fi
-#done
+while [ -z "${PING_RESULT}" ]
+do
+  LOCATION_HOSTNAME="$(curl --silent --include --request PUT --url "http://${HDFS_NAMENODE_ADDRESS}:50070/webhdfs/v1/tmp/testfile?op=CREATE" | grep -E '^Location:' | awk '{print $2}' | sed -e 's~http://~~g' -e 's~:.*~~g' )"
+  PING_RESULT=$(ping -c 4 -q ${LOCATION_HOSTNAME} | grep 'packet loss')
+  if [ -z "${PING_RESULT}" ]
+  then
+    K8S_NODE_ADDRESS="$(kubectl get nodes ${LOCATION_HOSTNAME} -o jsonpath='{.status.addresses[0].address}')"
+    cat<<EOF
+# Hostname "${LOCATION_HOSTNAME}" of k8s cluster's node is not resolved.
+# Add record with pair IP-address and hostname to /etc/hosts for example:
+${K8S_NODE_ADDRESS} ${LOCATION_HOSTNAME}
+EOF
+    read -p "Press [ENTER] for continue..."
+  fi
+done
 
 DGTMP=$(mktemp -d -t dg-git-tmp-XXXXXXXXXX)
 
@@ -249,20 +249,20 @@ HDFS_NAMENODE_POD="$(kubectl -n ${K8S_HDFS_NAMESPACE} get pods --no-headers -l a
 HDFS_NAMENODE_SERVICE="$(kubectl -n ${K8S_HDFS_NAMESPACE} get services --no-headers -l app.kubernetes.io/name=hdfs-namenode,app.kubernetes.io/instance=${K8S_HDFS_NAME} -o jsonpath='{.items[0].metadata.name}')"
 HDFS_NAMENODE_ADDRESS="${HDFS_NAMENODE_POD}.${HDFS_NAMENODE_SERVICE}.${K8S_HDFS_NAMESPACE}.svc.${K8S_CLUSTER_INTERNAL_DNS}"
 
-#for EXTRALIB_JAR in $(find "${EXTRALIB_BASE}" -type f)
-#do
-#  LIB_NAME="$(basename ${EXTRALIB_JAR})"
-#
-#  cat<<EOF
-#Copy "${LIB_NAME}" to HDFS...
-#EOF
-#
-#  HDFS_LOCATION="$(curl --silent --include --request PUT --url "http://${HDFS_NAMENODE_ADDRESS}:50070/webhdfs/v1${DATAGRAM_SHARED_LIBS_PATH}/${LIB_NAME}?op=CREATE" | grep -oP 'Location: \K.*' | sed -e 's/\r//g')"
-#
-#  curl --silent --request PUT --upload-file "${EXTRALIB_JAR}" --url "${HDFS_LOCATION}" &>/dev/null
-#done
+for EXTRALIB_JAR in $(find "${EXTRALIB_BASE}" -type f)
+do
+  LIB_NAME="$(basename ${EXTRALIB_JAR})"
 
-#rm -rf ${DGTMP}
+  cat<<EOF
+Copy "${LIB_NAME}" to HDFS...
+EOF
+
+  HDFS_LOCATION="$(curl --silent --include --request PUT --url "http://${HDFS_NAMENODE_ADDRESS}:50070/webhdfs/v1${DATAGRAM_SHARED_LIBS_PATH}/${LIB_NAME}?op=CREATE" | grep -oP 'Location: \K.*' | sed -e 's/\r//g')"
+
+  curl --silent --request PUT --upload-file "${EXTRALIB_JAR}" --url "${HDFS_LOCATION}" &>/dev/null
+done
+
+rm -rf ${DGTMP}
 
 
 cat<<EOF
