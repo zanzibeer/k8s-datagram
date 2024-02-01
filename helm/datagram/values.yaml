@@ -27,7 +27,7 @@ image:
   repository: registry.neomsa.ru/docker-neofoundation/datagram
   pullPolicy: Always #IfNotPresent (IfNotPresent not working with latest tag)
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "redesign-0.37"
+  tag: "redesign-0.228"
 
 imagePullSecrets:
   - name: docker-secret
