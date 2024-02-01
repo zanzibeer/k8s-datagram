@@ -44,8 +44,6 @@ spec:
               readOnly: true
             {{- end }}
       restartPolicy: Always
-      imagePullSecrets:
-        - name: docker-secret
       volumes:
         - name: hdfs-config
           configMap:
