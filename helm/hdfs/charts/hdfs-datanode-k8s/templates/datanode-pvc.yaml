@@ -3,6 +3,11 @@ kind: PersistentVolumeClaim
 metadata:
   name: data-datanode-hdfs-0
   namespace: apache-hdfs
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: hdfs
+  annotations:
+    meta.helm.sh/release-name: hdfs
 spec:
   accessModes:
     - ReadWriteOnce
