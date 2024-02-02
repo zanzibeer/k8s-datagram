@@ -12,7 +12,6 @@ spec:
     - port: 50075
       nodePort: 32075
       name: http
-  clusterIP: None
   type: NodePort
   selector:
     app.kubernetes.io/name: {{ template "hdfs-k8s.datanode.name" . }}
