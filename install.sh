@@ -227,22 +227,22 @@ PING_RESULT=""
 #echo "Add into /etc/hosts ${HOSTNAME_IP} ${HDFS_NAMENODE_ADDRESS}"
 #echo "${HOSTNAME_IP} ${HDFS_NAMENODE_ADDRESS}" >> /etc/hosts
 
-while [ -z "${PING_RESULT}" ]
-do
-  LOCATION_HOSTNAME="$(curl --silent --include --request PUT --url "http://${HDFS_NAMENODE_ADDRESS}:32070/webhdfs/v1/tmp/testfile?op=CREATE" | grep -E '^Location:' | awk '{print $2}' | sed -e 's~http://~~g' -e 's~:.*~~g' )"
-  echo $LOCATION_HOSTNAME
-  PING_RESULT=$(ping -c 4 -q ${LOCATION_HOSTNAME} | grep 'packet loss')
-  if [ -z "${PING_RESULT}" ]
-  then
-    K8S_NODE_ADDRESS="$(kubectl get nodes ${LOCATION_HOSTNAME} -o jsonpath='{.status.addresses[0].address}')"
-    cat<<EOF
-# Hostname "${LOCATION_HOSTNAME}" of k8s cluster's node is not resolved.
-# Add record with pair IP-address and hostname to /etc/hosts for example:
-${K8S_NODE_ADDRESS} ${LOCATION_HOSTNAME}
-EOF
-    read -p "Press [ENTER] for continue..."
-  fi
-done
+#while [ -z "${PING_RESULT}" ]
+#do
+#  LOCATION_HOSTNAME="$(curl --silent --include --request PUT --url "http://${HDFS_NAMENODE_ADDRESS}:32070/webhdfs/v1/tmp/testfile?op=CREATE" | grep -E '^Location:' | awk '{print $2}' | sed -e 's~http://~~g' -e 's~:.*~~g' )"
+#  echo $LOCATION_HOSTNAME
+#  PING_RESULT=$(ping -c 4 -q ${LOCATION_HOSTNAME} | grep 'packet loss')
+#  if [ -z "${PING_RESULT}" ]
+#  then
+#    K8S_NODE_ADDRESS="$(kubectl get nodes ${LOCATION_HOSTNAME} -o jsonpath='{.status.addresses[0].address}')"
+#    cat<<EOF
+## Hostname "${LOCATION_HOSTNAME}" of k8s cluster's node is not resolved.
+## Add record with pair IP-address and hostname to /etc/hosts for example:
+#${K8S_NODE_ADDRESS} ${LOCATION_HOSTNAME}
+#EOF
+#    read -p "Press [ENTER] for continue..."
+#  fi
+#done
 
 DGTMP=$(mktemp -d -t dg-git-tmp-XXXXXXXXXX)
 
@@ -302,7 +302,7 @@ EOF
 echo "Add into /etc/hosts ${HOSTNAME_IP} ${HDFS_NAMENODE_ADDRESS}"
 echo "${HOSTNAME_IP} ${K8S_DATAGRAM_NAME}.${K8S_DATAGRAM_NAMESPACE}.svc.${K8S_CLUSTER_INTERNAL_DNS}" >> /etc/hosts
 
-curl --user $DATAGRAM_USERNAME:$DATAGRAM_PASSWORD --request POST --header "Content-Type: application/json" --data-binary @- "http://${K8S_DATAGRAM_NAME}.${K8S_DATAGRAM_NAMESPACE}.svc.${K8S_CLUSTER_INTERNAL_DNS}/api/teneo/rt.LivyServer" << EOD
+curl --user $DATAGRAM_USERNAME:$DATAGRAM_PASSWORD --request POST --header "Content-Type: application/json" --data-binary @- "http://${K8S_DATAGRAM_NAME}.${K8S_CLUSTER_EXTERNAL_DNS}/api/teneo/rt.LivyServer" << EOD
 {
 "mode": "cluster",
 "_type_": "rt.LivyServer",
@@ -317,7 +317,7 @@ curl --user $DATAGRAM_USERNAME:$DATAGRAM_PASSWORD --request POST --header "Conte
 EOD
 EOD
 
-curl --user $DATAGRAM_USERNAME:$DATAGRAM_PASSWORD --request POST --header "Content-Type: application/json" --data-binary @- "http://${K8S_DATAGRAM_NAME}.${K8S_DATAGRAM_NAMESPACE}.svc.${K8S_CLUSTER_INTERNAL_DNS}/api/teneo/rt.Airflow"<<EOD
+curl --user $DATAGRAM_USERNAME:$DATAGRAM_PASSWORD --request POST --header "Content-Type: application/json" --data-binary @- "http://${K8S_DATAGRAM_NAME}.${K8S_CLUSTER_EXTERNAL_DNS}/api/teneo/rt.Airflow"<<EOD
 {
 "isKerberosEnabled": false,
 "livyConnId": "livy_svc",
