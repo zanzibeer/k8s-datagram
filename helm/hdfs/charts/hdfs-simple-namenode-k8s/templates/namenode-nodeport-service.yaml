@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hdfs-namenode-nodeport
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: hdfs
+  annotations:
+    meta.helm.sh/release-name: hdfs
+spec:
+  ports:
+    - name: fs
+      protocol: TCP
+      port: 8020
+      targetPort: 8020
+      nodePort: 32020
+    - name: http
+      protocol: TCP
+      port: 50070
+      targetPort: 50070
+      nodePort: 32070
+  selector:
+    app.kubernetes.io/instance: hdfs
+    app.kubernetes.io/name: hdfs-namenode
+  type: NodePort
+  sessionAffinity: None
+  externalTrafficPolicy: Cluster
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack
+  internalTrafficPolicy: Cluster
