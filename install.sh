@@ -483,32 +483,32 @@ helm upgrade --install ${K8S_SPARK_THRIFT_SERVER_NAME} ${CWD}/helm/spark-thrift-
 
 
 
-cat<<EOF
-
-=======================
-Installing Elasticsearch...
-=======================
-
-EOF
-
-kubectl create namespace logging
-kubectl label ns logging security.deckhouse.io/pod-policy=privileged
-
-helm upgrade --install ${K8S_EFK_NAME} bitnami/elasticsearch --namespace ${K8S_EFK_NAMESPACE} --create-namespace \
-  --set global.kibanaEnabled="true" \
-  --set kibana.ingress.enabled="true" \
-  --set kibana.ingress.hostname="${K8S_EFK_KIBANA_NAME}.${K8S_CLUSTER_EXTERNAL_DNS}" \
-  --set kibana.ingress.pathType="Prefix"
-
-helm upgrade --install ${K8S_EFK_NAME}-fluentd bitnami/fluentd --namespace ${K8S_EFK_NAMESPACE} --create-namespace \
-  --values ${CWD}/helm/efk/override.yaml 
-
-ELASTIC_FLUENTD_POD=""
-while [ "${ELASTIC_FLUENTD_POD}x" == "x" ]
-do
-  ELASTIC_FLUENTD_POD=$(kubectl -n ${K8S_EFK_NAMESPACE} get pods --no-headers -l app.kubernetes.io/name=fluentd | grep -m 1 'Running' | awk '{print $1}')
-  sleep 5
-done
+#cat<<EOF
+#
+#=======================
+#Installing Elasticsearch...
+#=======================
+#
+#EOF
+#
+#kubectl create namespace logging
+#kubectl label ns logging security.deckhouse.io/pod-policy=privileged
+#
+#helm upgrade --install ${K8S_EFK_NAME} bitnami/elasticsearch --namespace ${K8S_EFK_NAMESPACE} --create-namespace \
+#  --set global.kibanaEnabled="true" \
+#  --set kibana.ingress.enabled="true" \
+#  --set kibana.ingress.hostname="${K8S_EFK_KIBANA_NAME}.${K8S_CLUSTER_EXTERNAL_DNS}" \
+#  --set kibana.ingress.pathType="Prefix"
+#
+#helm upgrade --install ${K8S_EFK_NAME}-fluentd bitnami/fluentd --namespace ${K8S_EFK_NAMESPACE} --create-namespace \
+#  --values ${CWD}/helm/efk/override.yaml
+#
+#ELASTIC_FLUENTD_POD=""
+#while [ "${ELASTIC_FLUENTD_POD}x" == "x" ]
+#do
+#  ELASTIC_FLUENTD_POD=$(kubectl -n ${K8S_EFK_NAMESPACE} get pods --no-headers -l app.kubernetes.io/name=fluentd | grep -m 1 'Running' | awk '{print $1}')
+#  sleep 5
+#done
 
 cat<<EOF
 
