@@ -115,8 +115,8 @@ EOF
 
 read -p "Press [ENTER] for continue..."
 
-kubectl create namespace apache-hdfs
-kubectl label ns apache-hdfs security.deckhouse.io/pod-policy=privileged
+#kubectl create namespace apache-hdfs
+#kubectl label ns apache-hdfs security.deckhouse.io/pod-policy=privileged
 
 helm repo add bitnami https://charts.bitnami.com/bitnami
 

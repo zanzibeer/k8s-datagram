@@ -1,3 +1,24 @@
+# A headless service to create DNS records.
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "hdfs-k8s.datanode.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ template "hdfs-k8s.datanode.name" . }}
+    helm.sh/chart: {{ template "hdfs-k8s.subchart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  ports:
+    - port: 50075
+      nodePort: 32075
+      name: http
+  clusterIP: None
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: {{ template "hdfs-k8s.datanode.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  publishNotReadyAddresses: true
+---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
