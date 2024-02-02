@@ -299,9 +299,6 @@ Add Livy and Airflow connections to Datagram...
 =======================
 EOF
 
-echo "Add into /etc/hosts ${HOSTNAME_IP} ${HDFS_NAMENODE_ADDRESS}"
-echo "${HOSTNAME_IP} ${K8S_DATAGRAM_NAME}.${K8S_DATAGRAM_NAMESPACE}.svc.${K8S_CLUSTER_INTERNAL_DNS}" >> /etc/hosts
-
 curl --user $DATAGRAM_USERNAME:$DATAGRAM_PASSWORD --request POST --header "Content-Type: application/json" --data-binary @- "http://${K8S_DATAGRAM_NAME}.${K8S_CLUSTER_EXTERNAL_DNS}/api/teneo/rt.LivyServer" << EOD
 {
 "mode": "cluster",
@@ -314,7 +311,6 @@ curl --user $DATAGRAM_USERNAME:$DATAGRAM_PASSWORD --request POST --header "Conte
 "home": "/user",
 "master": "k8s://http://localhost:8443"
 }
-EOD
 EOD
 
 curl --user $DATAGRAM_USERNAME:$DATAGRAM_PASSWORD --request POST --header "Content-Type: application/json" --data-binary @- "http://${K8S_DATAGRAM_NAME}.${K8S_CLUSTER_EXTERNAL_DNS}/api/teneo/rt.Airflow"<<EOD
@@ -333,7 +329,6 @@ curl --user $DATAGRAM_USERNAME:$DATAGRAM_PASSWORD --request POST --header "Conte
 "user": "root"
 }
 
-EOD
 EOD
 
 
