@@ -223,13 +223,13 @@ HDFS_NAMENODE_SERVICE="$(kubectl -n ${K8S_HDFS_NAMESPACE} get services --no-head
 HDFS_NAMENODE_ADDRESS="${HDFS_NAMENODE_POD}.${HDFS_NAMENODE_SERVICE}.${K8S_HDFS_NAMESPACE}.svc.${K8S_CLUSTER_INTERNAL_DNS}"
 PING_RESULT=""
 
-HOSTNAME_IP="$(hostname -I | cut -f1 -d " ")"
-echo "Add into /etc/hosts ${HOSTNAME_IP} ${HDFS_NAMENODE_ADDRESS}"
-echo "${HOSTNAME_IP} ${HDFS_NAMENODE_ADDRESS}" >> /etc/hosts
+#HOSTNAME_IP="$(hostname -I | cut -f1 -d " ")"
+#echo "Add into /etc/hosts ${HOSTNAME_IP} ${HDFS_NAMENODE_ADDRESS}"
+#echo "${HOSTNAME_IP} ${HDFS_NAMENODE_ADDRESS}" >> /etc/hosts
 
 while [ -z "${PING_RESULT}" ]
 do
-  LOCATION_HOSTNAME="$(curl --silent --include --request PUT --url "http://${HDFS_NAMENODE_ADDRESS}:50070/webhdfs/v1/tmp/testfile?op=CREATE" | grep -E '^Location:' | awk '{print $2}' | sed -e 's~http://~~g' -e 's~:.*~~g' )"
+  LOCATION_HOSTNAME="$(curl --silent --include --request PUT --url "http://${HDFS_NAMENODE_ADDRESS}:32070/webhdfs/v1/tmp/testfile?op=CREATE" | grep -E '^Location:' | awk '{print $2}' | sed -e 's~http://~~g' -e 's~:.*~~g' )"
   echo $LOCATION_HOSTNAME
   PING_RESULT=$(ping -c 4 -q ${LOCATION_HOSTNAME} | grep 'packet loss')
   if [ -z "${PING_RESULT}" ]
@@ -262,7 +262,8 @@ do
 Copy "${LIB_NAME}" to HDFS...
 EOF
 
-  HDFS_LOCATION="$(curl --silent --include --request PUT --url "http://${HDFS_NAMENODE_ADDRESS}:50070/webhdfs/v1${DATAGRAM_SHARED_LIBS_PATH}/${LIB_NAME}?op=CREATE" | grep -oP 'Location: \K.*' | sed -e 's/\r//g')"
+#  HDFS_LOCATION="$(curl --silent --include --request PUT --url "http://${HDFS_NAMENODE_ADDRESS}:50070/webhdfs/v1${DATAGRAM_SHARED_LIBS_PATH}/${LIB_NAME}?op=CREATE" | grep -oP 'Location: \K.*' | sed -e 's/\r//g')"
+  HDFS_LOCATION="$(curl --silent --include --request PUT --url "http://${HDFS_NAMENODE_ADDRESS}:32075/webhdfs/v1${DATAGRAM_SHARED_LIBS_PATH}/${LIB_NAME}?op=CREATE" | grep -oP 'Location: \K.*' | sed -e 's/\r//g')"
 
   curl --silent --request PUT --upload-file "${EXTRALIB_JAR}" --url "${HDFS_LOCATION}" &>/dev/null
 done
