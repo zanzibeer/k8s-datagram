@@ -218,10 +218,10 @@ kubectl -n ${K8S_HDFS_NAMESPACE} exec ${CLIENT_POD} -- hadoop fs -ls /
 
 
 # Try to resolve location
-HDFS_NAMENODE_POD="$(kubectl -n ${K8S_HDFS_NAMESPACE} get pods --no-headers -l app.kubernetes.io/name=hdfs-namenode,app.kubernetes.io/instance=${K8S_HDFS_NAME} -o jsonpath='{.items[0].metadata.name}')"
-HDFS_NAMENODE_SERVICE="$(kubectl -n ${K8S_HDFS_NAMESPACE} get services --no-headers -l app.kubernetes.io/name=hdfs-namenode,app.kubernetes.io/instance=${K8S_HDFS_NAME} -o jsonpath='{.items[0].metadata.name}')"
-HDFS_NAMENODE_ADDRESS="${HDFS_NAMENODE_POD}.${HDFS_NAMENODE_SERVICE}.${K8S_HDFS_NAMESPACE}.svc.${K8S_CLUSTER_INTERNAL_DNS}"
-PING_RESULT=""
+#HDFS_NAMENODE_POD="$(kubectl -n ${K8S_HDFS_NAMESPACE} get pods --no-headers -l app.kubernetes.io/name=hdfs-namenode,app.kubernetes.io/instance=${K8S_HDFS_NAME} -o jsonpath='{.items[0].metadata.name}')"
+#HDFS_NAMENODE_SERVICE="$(kubectl -n ${K8S_HDFS_NAMESPACE} get services --no-headers -l app.kubernetes.io/name=hdfs-namenode,app.kubernetes.io/instance=${K8S_HDFS_NAME} -o jsonpath='{.items[0].metadata.name}')"
+#HDFS_NAMENODE_ADDRESS="${HDFS_NAMENODE_POD}.${HDFS_NAMENODE_SERVICE}.${K8S_HDFS_NAMESPACE}.svc.${K8S_CLUSTER_INTERNAL_DNS}"
+#PING_RESULT=""
 
 #HOSTNAME_IP="$(hostname -I | cut -f1 -d " ")"
 #echo "Add into /etc/hosts ${HOSTNAME_IP} ${HDFS_NAMENODE_ADDRESS}"

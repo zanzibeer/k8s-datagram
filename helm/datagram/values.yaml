@@ -1,8 +1,8 @@
 # Postgresql variables which overwrites "postgresql" chart variables.
 postgresql:
   image:
-    tag: "9.6-debian-10"
-#    tag: "11"
+#    tag: "9.6-debian-10"
+#    tag: "15"
   auth:
     username: "datagram"
     password: ""
@@ -28,7 +28,7 @@ image:
   repository: registry.neomsa.ru/docker-neofoundation/datagram
   pullPolicy: Always #IfNotPresent (IfNotPresent not working with latest tag)
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "redesign-0.228"
+  tag: "redesign-1.0"
 
 imagePullSecrets:
   - name: docker-secret
