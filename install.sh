@@ -260,13 +260,14 @@ do
 
   cat<<EOF
 Copy "${LIB_NAME}" to HDFS...
+"${EXTRALIB_JAR}"
 EOF
 
 #  HDFS_LOCATION="$(curl --silent --include --request PUT --url "http://${HDFS_NAMENODE_ADDRESS}:50070/webhdfs/v1${DATAGRAM_SHARED_LIBS_PATH}/${LIB_NAME}?op=CREATE" | grep -oP 'Location: \K.*' | sed -e 's/\r//g')"
   HDFS_LOCATION="$(curl --silent --include --request PUT --url "http://${HDFS_NAMENODE_ADDRESS}:32075/webhdfs/v1${DATAGRAM_SHARED_LIBS_PATH}/${LIB_NAME}?op=CREATE" | grep -oP 'Location: \K.*' | sed -e 's/\r//g' | sed -e 's/hdfs-datanode-.....:50/hdfs-namenode-0.hdfs-namenode.apache-hdfs.svc.cluster.local:32/g')"
   echo $HDFS_LOCATION
 #  curl --silent --request PUT --upload-file "${EXTRALIB_JAR}" --url "${HDFS_LOCATION}" &>/dev/null
-  curl --silent --request PUT --upload-file "${EXTRALIB_JAR}" --url "${HDFS_LOCATION}" --verbose
+  echo "curl --silent --request PUT --upload-file "${EXTRALIB_JAR}" --url "${HDFS_LOCATION}" --verbose"
 done
 
 rm -rf ${DGTMP}
