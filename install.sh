@@ -223,7 +223,9 @@ HDFS_NAMENODE_SERVICE="$(kubectl -n ${K8S_HDFS_NAMESPACE} get services --no-head
 HDFS_NAMENODE_ADDRESS="${HDFS_NAMENODE_POD}.${HDFS_NAMENODE_SERVICE}.${K8S_HDFS_NAMESPACE}.svc.${K8S_CLUSTER_INTERNAL_DNS}"
 PING_RESULT=""
 
-echo $HDFS_NAMENODE_ADDRESS
+HOSTNAME_IP="$(hostname -I | cut -f1 -d " ")"
+echo "Add into /etc/hosts ${HOSTNAME_IP} ${HDFS_NAMENODE_ADDRESS}"
+echo "${HOSTNAME_IP} ${HDFS_NAMENODE_ADDRESS}" >> /etc/hosts
 
 while [ -z "${PING_RESULT}" ]
 do
@@ -295,6 +297,9 @@ cat<<EOF
 Add Livy and Airflow connections to Datagram...
 =======================
 EOF
+
+echo "Add into /etc/hosts ${HOSTNAME_IP} ${HDFS_NAMENODE_ADDRESS}"
+echo "${HOSTNAME_IP} ${K8S_DATAGRAM_NAME}.${K8S_DATAGRAM_NAMESPACE}.svc.${K8S_CLUSTER_INTERNAL_DNS}" >> /etc/hosts
 
 curl --user $DATAGRAM_USERNAME:$DATAGRAM_PASSWORD --request POST --header "Content-Type: application/json" --data-binary @- "http://${K8S_DATAGRAM_NAME}.${K8S_DATAGRAM_NAMESPACE}.svc.${K8S_CLUSTER_INTERNAL_DNS}/api/teneo/rt.LivyServer" << EOD
 {
