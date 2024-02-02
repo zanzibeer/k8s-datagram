@@ -13,7 +13,8 @@ spec:
     kind: PersistentVolumeClaim
     namespace: apache-hdfs
     name: data-namenode-hdfs-0
-  persistentVolumeReclaimPolicy: Retain
+  persistentVolumeReclaimPolicy: Delete
+{{/*  persistentVolumeReclaimPolicy: Retain*/}}
   storageClassName: localpath-deckhouse-system
   hostPath:
     path: "/opt/local-path-provisioner/hdfs-namenode-0"
